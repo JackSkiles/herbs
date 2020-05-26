@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Herbs.maps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        body {
+            color: #404040;
+            font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            position: absolute;
+            width: 33.3333%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            border-right: 1px solid rgba(0, 0, 0, 0.25);
+        }
+
+        .pad2 {
+            padding: 20px;
+        }
+
+        .map {
+            position: absolute;
+            left: 33.3333%;
+            width: 66.6666%;
+            top: 0;
+            bottom: 0;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0;
+            font-weight: 400;
+            line-height: 20px;
+            padding: 20px 2px;
+        }
+
+        a {
+            color: #404040;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #101010;
+        }
+
+        .heading {
+            text-align: center;
+            background: #eee;
+            border-bottom: 1px solid #eee;
+            min-height: 60px;
+            line-height: 20px;
+            padding: 0px 10px 0px 10px;
+            background-color: #00853e;
+            color: #fff;
+        }
+
+        .btn-success {
+            background-color: #00853e;
+            border-color: whitesmoke;
+            float: right;
+        }
+
+
+        .listings {
+            height: 100%;
+            overflow: auto;
+            padding-bottom: 60px;
+        }
+
+        .listings .item {
+            display: block;
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            text-decoration: none;
+        }
+
+        .listings .item:last-child {
+            border-bottom: none;
+        }
+
+        .listings .item .title {
+            display: block;
+            color: #00853e;
+            font-weight: 700;
+        }
+
+        .listings .item .title small {
+            font-weight: 400;
+        }
+
+        .listings .item.active .title,
+        .listings .item .title:hover {
+            color: #8cc63f;
+        }
+
+        .listings .item.active {
+            background-color: #f8f8f8;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+            height: 3px;
+            border-left: 0;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-track {
+            background: none;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00853e;
+            border-radius: 0;
+        }
+
+        .marker {
+            border: none;
+            cursor: pointer;
+            height: 50px;
+            width: 40px;
+            background-image: url('images/map-marker.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            /* background-color: white; */
+        }
+
+        .clearfix {
+            display: block;
+        }
+
+        .clearfix:after {
+            content: '.';
+            display: block;
+            height: 0;
+            clear: both;
+            visibility: hidden;
+        }
+
+        /* Marker tweaks */
+        .mapboxgl-popup {
+            padding-bottom: 50px;
+        }
+
+        .mapboxgl-popup-close-button {
+            display: none;
+        }
+
+        .mapboxgl-popup-content {
+            font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+            padding: 0;
+            width: 180px;
+        }
+
+        .mapboxgl-popup-content-wrapper {
+            padding: 1%;
+        }
+
+        .mapboxgl-popup-content h3 {
+            background: #91c949;
+            color: #fff;
+            margin: 0;
+            display: block;
+            padding: 10px;
+            border-radius: 3px 3px 0 0;
+            font-weight: 700;
+            margin-top: -15px;
+        }
+
+        .mapboxgl-popup-content h4 {
+            margin: 0;
+            display: block;
+            padding: 10px 10px 10px 10px;
+            font-weight: 400;
+        }
+
+        .mapboxgl-popup-content div {
+            padding: 10px;
+        }
+
+        .mapboxgl-container .leaflet-marker-icon {
+            cursor: pointer;
+        }
+
+        .mapboxgl-popup-anchor-top>.mapboxgl-popup-content {
+            margin-top: 15px;
+        }
+
+        .mapboxgl-popup-anchor-top>.mapboxgl-popup-tip {
+            border-bottom-color: #91c949;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="heading">
+            <h1>Herbs.maps<a class="btn btn-success" href="index.html" role="button">Home</a></h1>
+        </div>
+        <div id="listings" class="listings"></div>
+    </div>
+    <div id="map" class="map"></div>
+
+    <script>
+        /* This will let you use the .remove() function later on */
+        if (!('remove' in Element.prototype)) {
+            Element.prototype.remove = function () {
+                if (this.parentNode) {
+                    this.parentNode.removeChild(this);
+                }
+            };
+        }
+
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiai1jbzkyIiwiYSI6ImNrOXVycmdpYjAwYWYzZXBjaXpseThsdTYifQ.KcwnFE5cZ8snab3U6GVTJg';
+
+        /**
+         * Add the map to the page
+         */
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-84.388305, 33.749806],
+            zoom: 10,
+            scrollZoom: false
+        });
+
+        var stores = {
+            'type': 'FeatureCollection',
+            'features': [
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.5008608, 33.6742251]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '1871 Church St NW',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.373145, 33.725924]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '2221 I blvd St NW',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.363928, 33.768737]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '1512 Park Ave NW',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.339499, 33.768459]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '3333 Candler Park dr.',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.385161, 33.651365]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '221 Southside Industrial PKWY SE',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.403701, 33.778123]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '8204 North Ave',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.587446, 33.862511]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '4831 Yates ave',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.377647, 33.922646]
+                    },
+                    'properties': {
+                        'description': '<strong>Muhsinah</strong><p>Jazz-influenced hip hop artist Muhsinah plays the Black Cat (1811 14th Street NW) tonight with Exit Clov and Gods’illa. 9:00 p.m. $12.</p>',
+                        'phoneFormatted': '(555) 555-555',
+                        'phone': '5555555555',
+                        'address': '11935 Boylston dr.',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.244150, 33.883329]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '4075 Chamblee Tucker rd.',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.316162, 33.854613]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '68 Coulter Ave',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.353061, 33.819088]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '3925 Walnut St',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+                        'postalCode': '30318',
+
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-84.351725, 33.762902]
+                    },
+                    'properties': {
+                        'phoneFormatted': '(555) 555-5555',
+                        'phone': '5555555555',
+                        'address': '1901 L St. NW',
+                        'city': 'Atlanta GA',
+                        'country': 'United States',
+
+                    }
+                }
+            ]
+        };
+
+
+        stores.features.forEach(function (store, i) {
+            store.properties.id = i;
+        });
+
+
+        map.on('load', function (e) {
+
+            map.addSource('places', {
+                'type': 'geojson',
+                'data': stores
+            });
+
+
+            buildLocationList(stores);
+            addMarkers();
+        });
+
+
+        function addMarkers() {
+
+            stores.features.forEach(function (marker) {
+
+                var el = document.createElement('div');
+                el.id = 'marker-' + marker.properties.id;
+                el.className = 'marker';
+
+
+                new mapboxgl.Marker(el, { offset: [0, -23] })
+                    .setLngLat(marker.geometry.coordinates)
+                    .addTo(map);
+
+
+                el.addEventListener('click', function (e) {
+                    flyToStore(marker);
+                    createPopUp(marker);
+
+                    var activeItem = document.getElementsByClassName('active');
+                    e.stopPropagation();
+                    if (activeItem[0]) {
+                        activeItem[0].classList.remove('active');
+                    }
+                    var listing = document.getElementById(
+                        'listing-' + marker.properties.id
+                    );
+                    listing.classList.add('active');
+                });
+            });
+        }
+
+
+        function buildLocationList(data) {
+            data.features.forEach(function (store, i) {
+
+                var prop = store.properties;
+                var listings = document.getElementById('listings');
+                var listing = listings.appendChild(document.createElement('div'));
+                listing.id = 'listing-' + prop.id;
+                listing.className = 'item';
+
+
+                var link = listing.appendChild(document.createElement('a'));
+                link.href = '#';
+                link.className = 'title';
+                link.id = 'link-' + prop.id;
+                link.innerHTML = prop.address;
+
+
+                var details = listing.appendChild(document.createElement('div'));
+                details.innerHTML = prop.city;
+                if (prop.phone) {
+                    details.innerHTML += ' &middot; ' + prop.phoneFormatted;
+                }
+
+
+                link.addEventListener('click', function (e) {
+                    for (var i = 0; i < data.features.length; i++) {
+                        if (this.id === 'link-' + data.features[i].properties.id) {
+                            var clickedListing = data.features[i];
+                            flyToStore(clickedListing);
+                            createPopUp(clickedListing);
+                        }
+                    }
+                    var activeItem = document.getElementsByClassName('active');
+                    if (activeItem[0]) {
+                        activeItem[0].classList.remove('active');
+                    }
+                    this.parentNode.classList.add('active');
+                });
+            });
+        }
+        
+        
+        function flyToStore(currentFeature) {
+            map.flyTo({
+                center: currentFeature.geometry.coordinates,
+                zoom: 15
+            });
+        }
+
+
+        function createPopUp(currentFeature) {
+            var popUps = document.getElementsByClassName('mapboxgl-popup');
+            if (popUps[0]) popUps[0].remove();
+            var popup = new mapboxgl.Popup({ closeOnClick: false });
+            popup
+                .setLngLat(currentFeature.geometry.coordinates)
+                .setHTML(
+                    '<h3>Herbs.</h3>' +
+                    '<h4>' +
+                    currentFeature.properties.address + '</h4>' + '<h4>' +
+                    currentFeature.properties.postalCode + '</h4>'
+                    
+                )
+                .addTo(map);
+        }
+
+
+
+    </script>
+</body>
+
+</html>

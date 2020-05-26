@@ -1,0 +1,64 @@
+html,body{
+    height:100%;
+    width: 100%;
+    background-color: whitesmoke;
+}
+
+.bg-image{
+    background-image: url('images/bodybg.jpg');
+    background-size: cover;
+}
+
+h1{
+    
+    color: whitesmoke;
+    align-content: center;
+}
+
+.lead{
+    color: whitesmoke;
+}
+
+h4{
+    font-size: 40px;
+    color: grey;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    justify-content: center;
+}
+
+.container{
+    padding: 10px 10px 10px 10px;
+   
+}
+
+.Container{
+    border: lightgrey;
+    border-width: 1px;
+    border-style: solid;
+    padding: 20px 20px 20px 20px;
+    margin-top: 50px;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.card-title{
+    color: darkgreen;
+    font-weight: bolder;
+}
+
+.card-body{
+    height: 50%;
+}
+
+.card-img-top{
+    height: 50%;
+}
+
+footer{
+    color: darkgreen;
+}
+
+.nav{
+    margin-top: 15px;
+}

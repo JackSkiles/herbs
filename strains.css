@@ -1,0 +1,78 @@
+html,body{
+    
+    height:100%;
+    width: 100%;
+    background-color: whitesmoke;
+}
+
+.bg-image{
+    background-image: url('images/budzz.jpg');
+    background-size: cover;
+}
+
+h1{
+    
+    color: whitesmoke;
+    align-content: center;
+}
+
+.lead{
+    color: whitesmoke;
+}
+
+h4{
+    font-size: 40px;
+    color: grey;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    justify-content: center;
+}
+
+.container{
+    padding: 10px 10px 10px 10px;
+   
+}
+
+.Container1{
+    border: lightgrey;
+    background-color: white;
+    border-width: 1px;
+    border-style: solid;
+    padding: 20px 20px 20px 20px;
+    margin-top: 50px;
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.card-title{
+    color: darkgreen;
+    font-weight: bolder;
+}
+
+.card-body{
+    height: 60%;
+}
+
+.card-img-top{
+    height: 40%;
+}
+
+footer{
+    color: darkgreen;
+}
+
+.nav{
+    margin-top: 15px;
+}
+
+footer{
+    color: darkgreen;
+}
+
+.nav{
+    margin-top: 15px;
+}
+
+.list-img-center{
+    size: 20px;
+}
